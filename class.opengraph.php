@@ -1,14 +1,32 @@
 <?php
 
 /**
- * class Opengraph version 1.0 by Chris Santala
+ * class Opengraph version 1.1 by Chris Santala
  *
- * Provides integration of the facebook Open Graph JS SDK into PHP.
+ * Provides PHP integration of the facebook Open Graph API.
  *
  * Based on the Simple PHP Framework class.config.php by Tyler Hall. 
  * 
  * For demonstration and implementation, visit <http://opengraphdemo.net>.
- */
+ * Latest version found at: <http://github.com/csantala/class-Open-Graph>.
+ *
+ * ----------------------------------------------------------------------
+ * LICENSE
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License (GPL)
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ * 
+ * To read the license please visit http://www.gnu.org/copyleft/gpl.html
+ * ======================================================================
+*/
+ 
 
     class Opengraph {
 
@@ -24,18 +42,15 @@
         // permissions basic 
         //private $permissions =  "email, read_stream, offline_access, publish_stream, user_about_me, user_birthday, user_hometown, user_location, user_relationships, user_religion_politics, user_status, user_website, user_work_history, read_friendlists, user_photo_video_tags, user_photos";
 		
+        // permissions opengraphdemo.net
+        private $permissions =  "publish_stream, offline_access, email, read_insights, read_stream, user_about_me, user_activities, user_birthday, user_education_history, user_events, user_groups, user_hometown, user_interests, user_likes, user_location, user_notes, user_online_presence, user_photo_video_tags, user_photos, user_relationships, user_religion_politics, user_status, user_videos, user_website, user_work_history, read_friendlists, read_requests, friends_about_me, friends_activities, friends_birthday, friends_education_history, friends_events, friends_groups, friends_hometown, friends_interests, friends_likes, friends_location, friends_notes, friends_online_presence, friends_photo_video_tags, friends_photos, friends_relationships, friends_religion_politics, friends_status, friends_videos, friends_website, friends_work_history";		
+		
         // permissions all 
         //private $permissions =  "publish_stream, create_event, rsvp_event, sms, offline_access, manage_pages, email, read_insights, read_stream, read_mailbox, ads_management, xmpp_login, user_about_me, user_activities, user_birthday, user_education_history, user_events, user_groups, user_hometown, user_interests, user_likes, user_location, user_notes, user_online_presence, user_photo_video_tags, user_photos, user_relationships, user_religion_politics, user_status, user_videos, user_website, user_work_history, read_friendlists, read_requests, friends_about_me, friends_activities, friends_birthday, friends_education_history, friends_events, friends_groups, friends_hometown, friends_interests, friends_likes, friends_location, friends_notes, friends_online_presence, friends_photo_video_tags, friends_photos, friends_relationships, friends_religion_politics, friends_status, friends_videos, friends_website, friends_work_history";
 
-        // permissions opengraphdemo.net
-        private $permissions =  "publish_stream, offline_access, email, read_insights, read_stream, user_about_me, user_activities, user_birthday, user_education_history, user_events, user_groups, user_hometown, user_interests, user_likes, user_location, user_notes, user_online_presence, user_photo_video_tags, user_photos, user_relationships, user_religion_politics, user_status, user_videos, user_website, user_work_history, read_friendlists, read_requests, friends_about_me, friends_activities, friends_birthday, friends_education_history, friends_events, friends_groups, friends_hometown, friends_interests, friends_likes, friends_location, friends_notes, friends_online_presence, friends_photo_video_tags, friends_photos, friends_relationships, friends_religion_politics, friends_status, friends_videos, friends_website, friends_work_history";
+        // fields: keys used for extracting information from profiles
+        public $fields = "id,first_name,last_name,name,link,about,birthday,work,education,email,website,hometown,location,gender,interested_in,meeting_for,relationship_status,religion,political,verified,significant_other,timezone,home,feed,tagged,posts,picture,friends,activities,interests,music,books,movies,television,likes,photos,albums,videos,groups,statuses,links,notes,events,inbox,outbox,updates,accounts";
 
-        // all fields
-        // public $fields = "id,first_name,last_name,name,link,about,birthday,work,education,email,website,hometown,location,gender,interested_in,meeting_for,relationship_status,religion,political,verified,significant_other,timezone,home,feed,tagged,posts,picture,friends,activities,interests,music,books,movies,television,likes,photos,albums,videos,groups,statuses,links,notes,events,inbox,outbox,updates,accounts";
-
-        // opengraphdemo.net fields
-        public $fields = "id,about,birthday,work,education,email,website,hometown,location,gender,religion,political,activities,interests,music,books,movies,television,groups";
-		
         // default invitation text
         //   appears in the header of the invite box
         private $invite_action_text = 'Tell your friends...';
@@ -68,6 +83,7 @@
 	
         }
 
+        // Add code/variables to be run only on production servers
         // Add code/variables to be run only on production servers
         private function production() {
 			
@@ -106,6 +122,7 @@
 
         }
 		
+
         // CONFIGURATION END
 		
 		
@@ -113,8 +130,7 @@
 		
 		public function doctype() {
              return '<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:fb="http://www.facebook.com/2008/fbml">
+<html xmlns:fb="http://www.facebook.com/2008/fbml" xmlns:og="http://opengraphprotocol.org/schema/">
 ';
       }
 
@@ -144,7 +160,8 @@
         // login button, set permissions above
         public function fb_login_button($label = "Connect with Facebook") {
 
-             return '<fb:login-button perms="'.$this->permissions.'"><fb:intl>'.$label.'</fb:intl></fb:login-button>';
+             return '<fb:login-button background="white" perms="'.$this->permissions.'"><fb:intl>'.$label.'</fb:intl></fb:login-button>';
+
 
         }
 		
@@ -232,7 +249,7 @@
 		
         // get user data from facebook
         //  ensure that uid is a string and not an integer to avoid automatic decimal notation 
-        public function getdata($uid, $access_token, $type = null) {
+        public function getdata($uid, $access_token, $type = null) { //die('https://graph.facebook.com/'.$uid.'/'.$type.'?access_token=' . $access_token);
 
             // TYPE         RETURNED DATA
             // null         profile data 
@@ -281,7 +298,44 @@
 
              return '<fb:name uid="'.$uid.'" '.$useyou.'></fb:name>';
         }
+		
+        // search public statuses
+        public function search_public_statuses($item) {
+             $item = str_replace(' ', "%20", $item);
+             return json_decode($this->geturl('https://graph.facebook.com/search?q='.$item.'&type=post'));
+        }
+		
+        // private_profile_search
+        public function search_feed($item, $access_token) { 
+             $item = str_replace(' ', "%20", $item);
+             return json_decode($this->geturl('https://graph.facebook.com/me/home?q='.$item.'&access_token='.$access_token));
+        }
+		
+        // my data search
+        public function public_search_name($name) {
+             $name = str_replace(' ', "%20", $name); 
+             return json_decode($this->geturl('https://graph.facebook.com/search?q='.$name.'&type=user&access_token='.$this->public_at));
+        }
+		
+        // my data feed search
+        public function mydata_feed($id) {
+             return json_decode($this->geturl('https://graph.facebook.com/'.$id.'/feed&access_token='.$this->public_at));
+        }
 
+        // user data
+        public function userdata($uid, $access_token, $type = null) { 
+             return json_decode($this->geturl('https://graph.facebook.com/'.$uid.'/?fields=likes,movies,books,notes,photos,albums,videos,events,groups,feed&access_token=' . $access_token));
+        }
+		
+        public function public_search($id) {
+             return json_decode($this->geturl('https://api.facebook.com/method/fql.query?'));
+        }
+		
+        // generic decode
+        public function decode_url($url) {
+             return json_decode($this->geturl($url));
+        }
+		
         // DATA EXTRACTION END
 		
         // PUBLISH BEGIN 
@@ -303,7 +357,77 @@
         // PUBLISH END
 
         // miscellaneous methods
+
+        // create album
+        public function create_album($uid, $access_token, $name) {
+             $query="access_token=$access_token&name=$name";
+
+             $url = "https://graph.facebook.com/me/albums"; 
+             $ch = curl_init();
+             curl_setopt($ch, CURLOPT_URL, $url);
+             curl_setopt($ch, CURLOPT_POST, 2);
+             curl_setopt($ch, CURLOPT_POSTFIELDS, $query);
+             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+             $aid = curl_exec ($ch); 
+             curl_close ($ch);
+			 return $aid;
+        }
 		
+
+        public function publish_photo($uid, $access_token, $file, $caption) { 
+
+             $FILE_PATH = $_SERVER["DOCUMENT_ROOT"]."/".$file; 
+			
+             $args = array('message' => 'Photo Caption');
+             $args['image'] = '@' . realpath($FILE_PATH);
+			
+             $arr_attachment = array('image' => '@'.realpath($FILE_PATH),
+                                     'message' => $caption);
+		
+             $_curl = curl_init();
+             curl_setopt($_curl, CURLOPT_URL, "https://graph.facebook.com/".$uid."/photos?access_token=".$access_token);
+             curl_setopt($_curl, CURLOPT_HEADER, false);
+             curl_setopt($_curl, CURLOPT_RETURNTRANSFER, true);
+             curl_setopt($_curl, CURLOPT_POST, true);
+             curl_setopt($_curl, CURLOPT_POSTFIELDS, $arr_attachment);
+             curl_setopt($_curl, CURLOPT_SSL_VERIFYHOST, 0);
+             curl_setopt($_curl, CURLOPT_SSL_VERIFYPEER, 0);
+
+             $_photo = curl_exec($_curl);
+             return $_photo;						
+
+        }
+
+        // get application token
+        public function app_token() { 
+            return $this->geturl('https://graph.facebook.com/oauth/access_token?grant_type=client_credentials&client_id='.$this->fbo_id.'&client_secret='.$this->fbo_secret);
+        }
+		
+		
+        // likes string handler
+        //   returns string "1 person likes this.", "x people like this.", or null based on item->likes object 
+        public function likes($data) {
+            if (isset($data)) { 
+                if ($data == 1) $likes = "1 person likes this.";
+                else $likes = $data."&nbsp;people like this.";
+            }
+            else $likes = null;
+
+            return $likes;
+        }
+
+        // message string handler
+        //   returns message or null, depending if $item->message is set
+        public function message($data) {
+            if (isset($data)) { 
+                $message = $data;
+            }
+            else $message = null;
+
+            return $message;
+        }
+
+
         // Grabs the contents of a remote URL. Can perform basic authentication if un/pw are provided.
         public function geturl($url, $username = null, $password = null) { //echo($url);
 
